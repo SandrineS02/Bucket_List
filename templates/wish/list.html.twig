@@ -13,6 +13,10 @@
                    title="Détail d'un souhait">
                     {{ wish.title }}
                 </a>
+                <a href="{{ path('wish_detail', {id: wish.id}) }}"
+                   title="Modifier le souhait">
+                    {{ wish.title }}
+                </a>
             </article>
         {% endfor %}
     </section>

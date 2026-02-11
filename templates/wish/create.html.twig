@@ -1,0 +1,28 @@
+{% extends 'base.html.twig' %}
+
+{%  block title %}
+    {{ parent()}} | Créer un souhait
+{% endblock %}
+
+{%  block body %}
+<div class="container-fluid">
+    <h1>Détail du souhait</h1>
+    {# todo: affiche le formulaire de création de cours #}
+    {% form_theme wishForm 'bootstrap_5_layout.html.twig' %}
+    {{ form_start(wishForm) }}
+    {{ form_row(wishForm.title) }}
+    {{ form_row(wishForm.description) }}
+    {{ form_row(wishForm.author) }}
+    {{ form_row(wishForm.published) }}
+    {{ form_row(wishForm.image) }}
+    {% if wishForm.vars.value.filename != null %}
+        <img src="{{ asset('uploads/images/' ~ wishForm.vars.value.filename) }}"
+             class="img-fluid" alt="image" />
+    {% endif %}
+    <button type="submit" class="btn btn-sm btn-primary">
+        {{ isEdit ? 'Modifier' : 'Créer' }}
+    </button>
+
+    {{ form_end(wishForm) }}
+</div>
+{% endblock %}

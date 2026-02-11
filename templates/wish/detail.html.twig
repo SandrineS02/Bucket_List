@@ -7,11 +7,27 @@
 {%  block body %}
     <h1>Détail du souhait</h1>
     <div class="card mt-2 mb-2 w-50 m-auto">
+        {% if wish.filename %}
+            <img src="{{ asset('uploads/images/'~wish.filename)}}"
+                 class="card-img-top img-fluid" alt="image"/>
+        {% endif %}
         <div class="card-body">
             <h5 class="card-title">{{ wish.title }}</h5>
-            <p class="wish-credit">Created by {{ wish.author }} on {{ wish.dateCreated|date('Y-m-d') }}</p>
+            <p class="wish-credit">Créer par {{ wish.author }} le {{ wish.dateCreated|date('d-m-Y') }}</p>
             {# le filtre nl2br convertit les sauts de ligne du texte en balises <br> #}
             <p class="card-text">{{ wish.description|nl2br }}</p>
+        </div>
+        <div class="text-center">
+            <a href="{{ path('wish_delete', {'id': wish.id, 'token': csrf_token('delete'~wish.id)}) }}"
+               class="btn btn-danger mt-2"
+               title="Supprimer le souhait">
+                Delete
+            </a>
+            <a href="{{ path('wish_update', {'id': wish.id}) }}"
+               class="btn btn-secondary mt-2"
+               title="Modifier le souhait">
+                Modify
+            </a>
         </div>
     </div>
 {% endblock %}

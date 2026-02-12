@@ -18,7 +18,7 @@ final class WishController extends AbstractController
     #[Route('/souhait/liste', name: 'wish_list')]
     public function list(WishRepository $wishRepository): Response
     {
-        $wishes = $wishRepository->findBy(['published' => true], ['dateCreated' => 'DESC']);
+        $wishes = $wishRepository->findPublishedWishesWithCategories();
 
         return $this->render('wish/list.html.twig', [
             // passe les wishes à la vue twig

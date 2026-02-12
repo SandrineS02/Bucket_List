@@ -2,11 +2,13 @@
 
 namespace App\DataFixtures;
 
+use App\Entity\Category;
 use App\Entity\Wish;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
+use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 
-class WishFixtures extends Fixture
+class WishFixtures extends Fixture implements DependentFixtureInterface
 {
     public function load(ObjectManager $manager): void
     {
@@ -18,6 +20,7 @@ class WishFixtures extends Fixture
                 'created' => '-5 months',
                 'updated' => '-4 months',
                 'published' => 1,
+                'category' => CategoryFixtures::VOYAGES,
             ],
             [
                 'title' => 'Apprendre à jouer du piano',
@@ -26,6 +29,7 @@ class WishFixtures extends Fixture
                 'created' => '-3 months',
                 'updated' => null,
                 'published' => 1,
+                'category' => CategoryFixtures::AUTRES,
             ],
             [
                 'title' => 'Faire un road trip aux États-Unis',
@@ -34,6 +38,7 @@ class WishFixtures extends Fixture
                 'created' => '-6 months',
                 'updated' => '-2 months',
                 'published' => 1,
+                'category' => CategoryFixtures::VOYAGES,
             ],
             [
                 'title' => 'Courir un marathon',
@@ -42,6 +47,7 @@ class WishFixtures extends Fixture
                 'created' => '-4 months',
                 'updated' => null,
                 'published' => 0,
+                'category' => CategoryFixtures::SPORTS,
             ],
             [
                 'title' => 'Plonger avec des tortues',
@@ -50,6 +56,7 @@ class WishFixtures extends Fixture
                 'created' => '-2 months',
                 'updated' => '-1 month',
                 'published' => 1,
+                'category' => CategoryFixtures::VOYAGES,
             ],
             [
                 'title' => 'Écrire un livre',
@@ -58,6 +65,7 @@ class WishFixtures extends Fixture
                 'created' => '-1 month',
                 'updated' => null,
                 'published' => 0,
+                'category' => CategoryFixtures::AUTRES,
             ],
             [
                 'title' => 'Faire un saut en parachute',
@@ -66,6 +74,7 @@ class WishFixtures extends Fixture
                 'created' => '-5 months',
                 'updated' => '-3 months',
                 'published' => 1,
+                'category' => CategoryFixtures::VOYAGES,
             ],
             [
                 'title' => 'Apprendre une nouvelle langue',
@@ -74,6 +83,7 @@ class WishFixtures extends Fixture
                 'created' => '-2 months',
                 'updated' => null,
                 'published' => 1,
+                'category' => CategoryFixtures::AUTRES,
             ],
             [
                 'title' => 'Faire le tour du Japon',
@@ -82,6 +92,7 @@ class WishFixtures extends Fixture
                 'created' => '-6 months',
                 'updated' => '-5 months',
                 'published' => 0,
+                'category' => CategoryFixtures::VOYAGES,
             ],
             [
                 'title' => 'Assister à un concert mythique',
@@ -90,6 +101,7 @@ class WishFixtures extends Fixture
                 'created' => '-3 weeks',
                 'updated' => null,
                 'published' => 1,
+                'category' => CategoryFixtures::DIVERTISSEMENTS ,
             ],
             [
                 'title' => 'Faire un safari en Afrique',
@@ -98,6 +110,7 @@ class WishFixtures extends Fixture
                 'created' => '-4 months',
                 'updated' => '-2 months',
                 'published' => 1,
+                'category' => CategoryFixtures::VOYAGES,
             ],
             [
                 'title' => 'Gravir le Mont Blanc',
@@ -106,6 +119,7 @@ class WishFixtures extends Fixture
                 'created' => '-5 months',
                 'updated' => null,
                 'published' => 0,
+                'category' => CategoryFixtures::VOYAGES,
             ],
             [
                 'title' => 'Créer ma propre entreprise',
@@ -114,6 +128,7 @@ class WishFixtures extends Fixture
                 'created' => '-3 months',
                 'updated' => '-1 month',
                 'published' => 1,
+                'category' => CategoryFixtures::AUTRES,
             ],
             [
                 'title' => 'Passer une nuit dans le désert',
@@ -122,6 +137,7 @@ class WishFixtures extends Fixture
                 'created' => '-2 months',
                 'updated' => null,
                 'published' => 1,
+                'category' => CategoryFixtures::VOYAGES,
             ],
             [
                 'title' => 'Adopter un chien',
@@ -130,6 +146,7 @@ class WishFixtures extends Fixture
                 'created' => '-6 months',
                 'updated' => '-5 months',
                 'published' => 0,
+                'category' => CategoryFixtures::AUTRES,
             ],
             [
                 'title' => 'Apprendre la photographie',
@@ -138,6 +155,7 @@ class WishFixtures extends Fixture
                 'created' => '-1 month',
                 'updated' => null,
                 'published' => 1,
+                'category' => CategoryFixtures::VOYAGES,
             ],
             [
                 'title' => 'Faire du bénévolat à l’étranger',
@@ -146,6 +164,7 @@ class WishFixtures extends Fixture
                 'created' => '-4 months',
                 'updated' => '-3 months',
                 'published' => 1,
+                'category' => CategoryFixtures::RELATIONS,
             ],
             [
                 'title' => 'Voir les pyramides d’Égypte',
@@ -154,6 +173,7 @@ class WishFixtures extends Fixture
                 'created' => '-5 months',
                 'updated' => null,
                 'published' => 1,
+                'category' => CategoryFixtures::VOYAGES,
             ],
             [
                 'title' => 'Traverser l’Europe en train',
@@ -162,6 +182,7 @@ class WishFixtures extends Fixture
                 'created' => '-3 weeks',
                 'updated' => null,
                 'published' => 0,
+                'category' => CategoryFixtures::VOYAGES,
             ],
             [
                 'title' => 'Participer à un triathlon',
@@ -170,6 +191,7 @@ class WishFixtures extends Fixture
                 'created' => '-2 months',
                 'updated' => '-1 week',
                 'published' => 1,
+                'category' => CategoryFixtures::SPORTS,
             ],
 
         ];
@@ -187,9 +209,23 @@ class WishFixtures extends Fixture
 
             $wish->setPublished($data['published']);
 
+            // on récupère la catégorie
+            $wish->setCategory(
+                $this->getReference($data['category'], Category::class)
+            );
+
+
+
             $manager->persist($wish);
         }
 
         $manager->flush();
+    }
+
+    public function getDependencies(): array
+    {
+        return [
+            CategoryFixtures::class,
+        ];
     }
 }

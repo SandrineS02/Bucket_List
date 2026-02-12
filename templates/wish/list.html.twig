@@ -11,12 +11,9 @@
             <article>
                 <a href="{{ path('wish_detail', {id: wish.id}) }}"
                    title="Détail d'un souhait">
-                    {{ wish.title }}
+                    {{ wish.title }} - {{ wish.category.name }}
                 </a>
-                <a href="{{ path('wish_detail', {id: wish.id}) }}"
-                   title="Modifier le souhait">
-                    {{ wish.title }}
-                </a>
+
             </article>
         {% endfor %}
     </section>

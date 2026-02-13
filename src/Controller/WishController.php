@@ -7,8 +7,11 @@ use App\Entity\Wish;
 use App\Form\CommentType;
 use App\Form\WishFormType;
 use App\Repository\WishRepository;
+use App\Util\Censurator;
+use App\Util\Uploader;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -63,104 +66,105 @@ final class WishController extends AbstractController
 
 
     #[Route('/creer', name: 'wish_create', methods: ['GET', 'POST'])]
-    public function create(Request $request, EntityManagerInterface $entityManager): Response
+    public function create(
+        Request $request,
+        EntityManagerInterface $entityManager,
+        Censurator $censurator,
+        Uploader $uploader
+    ): Response
     {
-        // crée une nouvelle instance de l'entité Wish
         $wish = new Wish();
         $wish->setUser($this->getUser());
-        // crée le formulaire en liant l'entité Wish
-        $wishForm = $this->createForm(WishFormType::class, $wish);
 
-        // traite le formulaire : récupère les données envoyées par l'utilisateur grace à POST et les applique à l'objet $wish
+        $wishForm = $this->createForm(WishFormType::class, $wish);
         $wishForm->handleRequest($request);
 
-        //vérifie si le formulaire a été soumis et qu'il est valide en fonction des contraintes ajoutées
         if ($wishForm->isSubmitted() && $wishForm->isValid()) {
-            // récupère le fichier image uploadé depuis le formulaire, si ok fichier image uploadé alors $imageFile = null.
+
+            // ✅ Censure
+            $wish->setDescription(
+                $censurator->purify($wish->getDescription())
+            );
+
+            // ✅ Upload via le service
+            /** @var UploadedFile $imageFile */
             $imageFile = $wishForm->get('image')->getData();
-            // si il y a un fichier image => on le traite
+
             if ($imageFile) {
-                // genere un nom de fichier uniquepour eviter les doublons et récupère l'extension du fichier
-                $newFilename = uniqid() . '.' . $imageFile->guessExtension();
-                // déplace le fichier uploadé dans le répertoire défini
-                try {
-                    $imageFile->move(
-                        $this->getParameter('app.project_images_directory'),
-                        // nouveau nom du fichier
-                        $newFilename
-                    );
-                    // enregistre le nom diu fichier
-                    $wish->setFilename($newFilename);
-                } catch (FileException $e) {
-                    // si erreur, affiche un message d'erreur'
-                    $this->addFlash('danger', 'Impossible de télécharger l’image.');
-                }
+                $filename = $uploader->upload($imageFile);
+                $wish->setFilename($filename);
             }
-            // prepare l'enregistrement en bd
+
             $entityManager->persist($wish);
-            //éxécute l'enregistrement
             $entityManager->flush();
-            // affiche un message flash de réussite sur la prochaine page
+
             $this->addFlash("success", "Le souhait a bien été créé, bravo.");
-            // redirige vers la page du souhait qui a été créé
-            return $this->redirectToRoute('wish_detail', ['id' => $wish->getId()]);
+
+            return $this->redirectToRoute('wish_detail', [
+                'id' => $wish->getId()
+            ]);
         }
 
         return $this->render('wish/create.html.twig', [
-            "wishForm" => $wishForm, // affiche le formulaire
-            "isEdit" => false // false indque que c'est une création t non une modification (pour changer dynamiquement le texte du boutton de validation du formulaire)
+            "wishForm" => $wishForm,
+            "isEdit" => false
         ]);
     }
 
 
+
     #[Route('/{id}/update', name: 'wish_update', requirements: ['id' => '\d+'], methods: ['GET', 'POST'])]
-    public function update(int $id, WishRepository $wishRepository, Request $request, EntityManagerInterface $entityManager): Response
+    public function update(
+        int $id,
+        WishRepository $wishRepository,
+        Request $request,
+        EntityManagerInterface $entityManager,
+        Censurator $censurator,
+        Uploader $uploader
+    ): Response
     {
-        // récupère le souhait depuis la bdd grace à son id.
         $wish = $wishRepository->find($id);
-        // si souhait inexistant
+
         if (!$wish) {
-            // message d'erreur
             throw $this->createNotFoundException("Ce souhait n'existe pas");
         }
+
         if ($wish->getUser() !== $this->getUser()) {
             throw $this->createAccessDeniedException();
         }
-        // creation du formulaire qui contient les données du souhait à modifié
+
         $wishForm = $this->createForm(WishFormType::class, $wish);
-        // récupère les données saisies par l'utilisateur
         $wishForm->handleRequest($request);
-        // vérifie si le formulaire est soumis et valide
+
         if ($wishForm->isSubmitted() && $wishForm->isValid()) {
-            // Gestion de l'image (mise à jour)
+
+            // Censure
+            $wish->setDescription(
+                $censurator->purify($wish->getDescription())
+            );
+
+            // Upload via service
+            /** @var UploadedFile $imageFile */
             $imageFile = $wishForm->get('image')->getData();
+
             if ($imageFile) {
-                $newFilename = uniqid() . '.' . $imageFile->guessExtension();
-                try {
-                    $imageFile->move(
-                        $this->getParameter('app.project_images_directory'),
-                        $newFilename
-                    );
-                    $wish->setFilename($newFilename);
-                } catch (FileException $e) {
-                    $this->addFlash('danger', 'Impossible de télécharger l’image.');
-                }
+                $filename = $uploader->upload($imageFile);
+                $wish->setFilename($filename);
             }
 
-
-            // gestion de la suppression de l'image
-            //vérifie que le formulaire contient le champ 'deleteImage' et que l'utilisateur a bien coché la checkbox
+            // Suppression image
             if ($wishForm->has('deleteImage') && $wishForm->get('deleteImage')->getData()) {
-                // verifie que l'entité a bien un fileName
+
                 $existingFilename = $wish->getFilename();
+
                 if ($existingFilename) {
-                    // correspond au chemin complett du fichier sur le serveur
                     $imagePath = $this->getParameter('app.project_images_directory') . '/' . $existingFilename;
-                    // vérifie que le fichier existe bien
+
                     if (file_exists($imagePath)) {
-                        unlink($imagePath); // supprime  le fichier
+                        unlink($imagePath);
                     }
-                    $wish->setFilename(null); // supprime la référence en bdd
+
+                    $wish->setFilename(null);
                 }
             }
 
@@ -168,7 +172,10 @@ final class WishController extends AbstractController
             $entityManager->flush();
 
             $this->addFlash('success', 'Votre souhait a bien été mis à jour');
-            return $this->redirectToRoute('wish_detail', ['id' => $wish->getId()]);
+
+            return $this->redirectToRoute('wish_detail', [
+                'id' => $wish->getId()
+            ]);
         }
 
         return $this->render('wish/create.html.twig', [
@@ -176,6 +183,7 @@ final class WishController extends AbstractController
             "isEdit" => true
         ]);
     }
+
 
 
     #[Route('/{id}/delete', name: 'wish_delete', requirements: ['id' => '\d+'], methods: ['GET'])]

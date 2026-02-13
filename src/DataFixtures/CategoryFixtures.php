@@ -8,6 +8,7 @@ use Doctrine\Persistence\ObjectManager;
 
 class CategoryFixtures extends Fixture
 {
+    // on initialise les catégories
     public const VOYAGES = 'cat_voyages';
     public const SPORTS = 'cat_sports';
     public const DIVERTISSEMENTS = 'cat_divertissements';
@@ -16,6 +17,7 @@ class CategoryFixtures extends Fixture
 
     public function load(ObjectManager $manager): void
     {
+        // donne un libelle (ici name) à chacune des catégorie
         $categories = [
             self::VOYAGES => 'Voyages et Aventures',
             self::SPORTS => 'Sports',

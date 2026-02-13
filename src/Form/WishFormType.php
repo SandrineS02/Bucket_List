@@ -2,6 +2,7 @@
 
 namespace App\Form;
 
+use App\Entity\User;
 use App\Entity\Category;
 use App\Entity\Wish;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
@@ -34,8 +35,9 @@ class WishFormType extends AbstractType
                 'label' => 'Description du souhait ',
                 'required' => false
             ])
-            ->add('author', TextType::class, [
-                'label' => 'Auteur du souhait ',
+            ->add('user', EntityType::class, [
+                'class' => User::class,
+                'choice_label' => 'username',
             ])
             ->add('published', CheckboxType::class, [
                 'label' => 'Publier le souhait ?',

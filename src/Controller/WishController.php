@@ -2,7 +2,9 @@
 
 namespace App\Controller;
 
+use App\Entity\Comment;
 use App\Entity\Wish;
+use App\Form\CommentType;
 use App\Form\WishFormType;
 use App\Repository\WishRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -27,19 +29,36 @@ final class WishController extends AbstractController
     }
 
 
-    #[Route('/souhait/{id}', name: 'wish_detail', requirements: ['id' => '\d+'], methods: ['GET'])]
-    public function detail(int $id, WishRepository $wishRepository): Response
+    #[Route('/souhait/{id}', name: 'wish_detail', requirements: ['id' => '\d+'], methods: ['GET', 'POST'])]
+    public function detail(int $id, WishRepository $wishRepository, Request $request, EntityManagerInterface $entityManager): Response
     {
         // récupère un wish en fonction de son id passé dans l'url
         $wish = $wishRepository->find($id);
 
         // si le wish n'existe pas en bd => déclanche erreur 404
         if (!$wish) {
-            throw $this->createNotFoundException('Wish not found');
+            throw $this->createNotFoundException('Souhait inexistant');
         }
-        return $this->render('wish/detail.html.twig', [
-            "wish" => $wish,
-        ]);
+        $parameters = ["wish" => $wish];
+        if ($this->getUser() && $this->getUser() !== $wish->getUser()) {
+            $comment = new Comment();
+            $comment->setUser($this->getUser());
+            $comment->setWish($wish);
+            $commentForm = $this->createForm(CommentType::class, $comment);
+            $commentForm->handleRequest($request);
+
+            if ($commentForm->isSubmitted() && $commentForm->isValid()) {
+                $entityManager->persist($comment);
+                $entityManager->flush();
+                $this->addFlash('success', 'Le commentaire a bien été ajouté');
+                return $this->redirectToRoute('wish_detail', ['id' => $wish->getId()]);
+            }
+
+            $parameters["commentForm"] = $commentForm->createView(); // ✅ important
+        }
+
+        return $this->render('wish/detail.html.twig', $parameters);
+
     }
 
 
@@ -48,6 +67,7 @@ final class WishController extends AbstractController
     {
         // crée une nouvelle instance de l'entité Wish
         $wish = new Wish();
+        $wish->setUser($this->getUser());
         // crée le formulaire en liant l'entité Wish
         $wishForm = $this->createForm(WishFormType::class, $wish);
 
@@ -103,7 +123,9 @@ final class WishController extends AbstractController
             // message d'erreur
             throw $this->createNotFoundException("Ce souhait n'existe pas");
         }
-
+        if ($wish->getUser() !== $this->getUser()) {
+            throw $this->createAccessDeniedException();
+        }
         // creation du formulaire qui contient les données du souhait à modifié
         $wishForm = $this->createForm(WishFormType::class, $wish);
         // récupère les données saisies par l'utilisateur
@@ -163,6 +185,10 @@ final class WishController extends AbstractController
         $wish = $wishRepository->find($id);
         if (!$wish) {
             throw $this->createNotFoundException("Ce souhait n'existe pas");
+        }
+
+        if (!($wish->getUser() === $this->getUser() || $this->isGranted('ROLE_ADMIN'))) {
+            throw $this->createAccessDeniedException();
         }
 
         // Vérifie le token CSRF

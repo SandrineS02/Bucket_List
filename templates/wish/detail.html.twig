@@ -14,21 +14,75 @@
         <div class="card-body">
             <h5 class="card-title">{{ wish.title }}</h5>
             <p class="card-text">{{ wish.category.name }}</p>
-            <p class="wish-credit">Créer par {{ wish.author }} le {{ wish.dateCreated|date('d-m-Y') }}</p>
+            <p class="wish-credit">Créer par {{ wish.user.username }} le {{ wish.dateCreated|date('d-m-Y') }}</p>
             {# le filtre nl2br convertit les sauts de ligne du texte en balises <br> #}
             <p class="card-text">{{ wish.description|nl2br }}</p>
         </div>
         <div class="text-center">
+            {% if app.user == wish.user or is_granted('ROLE_ADMIN') %}
             <a href="{{ path('wish_delete', {'id': wish.id, 'token': csrf_token('delete'~wish.id)}) }}"
                class="btn btn-danger mt-2"
                title="Supprimer le souhait">
-                Delete
+                Supprimer
             </a>
+            {% endif %}
+            {% if app.user == wish.user %}
             <a href="{{ path('wish_update', {'id': wish.id}) }}"
                class="btn btn-secondary mt-2"
                title="Modifier le souhait">
-                Modify
+                Modifier
             </a>
+            {% endif %}
         </div>
+    </div>
+
+    {% if app.user and app.user != wish.user %}
+        <div>
+            <h2>Laisser un commentaire</h2>
+            {{ form_start(commentForm) }}
+            {{ form_row(commentForm.content) }}
+            {{ form_row(commentForm.score) }}
+            <button class="btn btn-secondary">Ajouter un commentaire</button>
+            {{ form_end(commentForm) }}
+        </div>
+    {% endif %}
+    {% if (wish.comments | length) > 0 %}
+        <p class="card-text text-decoration-underline mt-2">Commentaires :</p>
+        {% for comment in wish.comments %}
+            <div class="border border-1 rounded p-2 mt-2">
+                <p class="wish-credit">
+                    Ecrit par {{ comment.user.username }} le {{ comment.dateCreated | date('d-m-Y H:i:s') }}
+                    {% if app.user and (app.user == comment.user) %}
+                        <a href="{{ path('comment_update', {'id': comment.id }) }}"
+                           class="btn btn-secondary btn-sm"
+                           title="Modifier votre commentaire">
+                            Modifier
+                        </a>
+                    {% endif %}
+                    {% if app.user and (app.user == comment.user or is_granted('ROLE_ADMIN')) %}
+                        <a href="{{ path('comment_delete', {'id': comment.id, 'token': csrf_token('delete'~comment.id) }) }}"
+                           class="btn btn-danger btn-sm"
+                           title="Supprimer votre commentaire">
+                            Delete
+                        </a>
+                    {% endif %}
+                </p>
+
+                <p class="card-text">{{ comment.content }}</p>
+                <p class="card-text">
+                    {% if (comment.score > 0) %}
+                        {% for i in 1..(comment.score) %}
+                            &#9733
+                        {% endfor %}
+                    {% endif %}
+                    {% if (comment.score < 5) %}
+                        {% for i in 1..(5-comment.score) %}
+                            &#9734
+                        {% endfor %}
+                    {% endif %}
+                </p>
+            </div>
+        {% endfor %}
+    {% endif %}
     </div>
 {% endblock %}

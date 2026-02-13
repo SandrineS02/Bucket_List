@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\WishRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -14,6 +16,7 @@ class Wish
     {
         $this->published = true;
         $this->dateCreated = new \DateTimeImmutable;
+        $this->comments = new ArrayCollection();
     }
 
     #[ORM\Id]
@@ -43,19 +46,7 @@ class Wish
     private ?string $description = null;
 
 
-    #[ORM\Column(length: 50)]
-    #[Assert\NotBlank(message: 'Please provide your username!')]
-    #[Assert\Length(
-        min: 3,
-        max: 50,
-        minMessage: 'Votre nom ou pseudo doit avoir au moins 3 caractères !',
-        maxMessage: 'Votre nom ou pseudo doit avoir au maximum 50 caractère'
-    )]
-    #[Assert\Regex(
-        pattern: '/^[a-z0-9_ -]+$/i',
-        message: "Merci d'utiliser seulement des lettres, des chiffres, des underscores et des tirets"
-    )]
-    private ?string $author = null;
+
 
     #[ORM\Column(options: ['default' => true])]
     private ?bool $published = null;
@@ -73,6 +64,16 @@ class Wish
     #[ORM\JoinColumn(nullable: false)]
     #[Assert\NotNull]
     private ?Category $category = null;
+
+    #[ORM\ManyToOne(inversedBy: 'wishes')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?User $user = null;
+
+    /**
+     * @var Collection<int, Comment>
+     */
+    #[ORM\OneToMany(targetEntity: Comment::class, mappedBy: 'wish', orphanRemoval: true)]
+    private Collection $comments;
 
     public function getId(): ?int
     {
@@ -103,17 +104,7 @@ class Wish
         return $this;
     }
 
-    public function getAuthor(): ?string
-    {
-        return $this->author;
-    }
 
-    public function setAuthor(string $author): static
-    {
-        $this->author = $author;
-
-        return $this;
-    }
 
     public function isPublished(): ?bool
     {
@@ -171,6 +162,48 @@ class Wish
     public function setCategory(?Category $category): static
     {
         $this->category = $category;
+
+        return $this;
+    }
+
+    public function getUser(): ?User
+    {
+        return $this->user;
+    }
+
+    public function setUser(?User $user): static
+    {
+        $this->user = $user;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Comment>
+     */
+    public function getComments(): Collection
+    {
+        return $this->comments;
+    }
+
+    public function addComment(Comment $comment): static
+    {
+        if (!$this->comments->contains($comment)) {
+            $this->comments->add($comment);
+            $comment->setWish($this);
+        }
+
+        return $this;
+    }
+
+    public function removeComment(Comment $comment): static
+    {
+        if ($this->comments->removeElement($comment)) {
+            // set the owning side to null (unless already changed)
+            if ($comment->getWish() === $this) {
+                $comment->setWish(null);
+            }
+        }
 
         return $this;
     }

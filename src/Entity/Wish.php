@@ -2,14 +2,29 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
 use App\Repository\WishRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Serializer\Annotation\Groups;
+
 
 #[ORM\Entity(repositoryClass: WishRepository::class)]
+#[ApiResource(
+    operations: [
+        new GET(),
+        new GetCollection()
+    ],
+    normalizationContext: ['groups' => ['getWishes']]
+
+)]
+
+
 class Wish
 {
     public function __construct()
@@ -22,6 +37,7 @@ class Wish
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['getWishes'])]
     private ?int $id = null;
 
 
@@ -33,6 +49,7 @@ class Wish
         maxMessage: 'Le titre doit avoir maximum 255 caractères !'
     )]
     #[ORM\Column(length: 255)]
+    #[Groups(['getWishes'])]
     private ?string $title = null;
 
 
@@ -43,6 +60,7 @@ class Wish
         minMessage: "La description de votre soit doit avoir au moins 5 caractères !",
         maxMessage: "La description de votre soit doit avoir maximum 5000 caractères !"
     )]
+    #[Groups(['getWishes'])]
     private ?string $description = null;
 
 
@@ -52,6 +70,7 @@ class Wish
     private ?bool $published = null;
 
     #[ORM\Column]
+    #[Groups(['getWishes'])]
     private ?\DateTimeImmutable $dateCreated = null;
 
     #[ORM\Column(nullable: true)]
@@ -63,16 +82,19 @@ class Wish
     #[ORM\ManyToOne(inversedBy: 'wishes')]
     #[ORM\JoinColumn(nullable: false)]
     #[Assert\NotNull]
+    #[Groups(['getWishes'])]
     private ?Category $category = null;
 
     #[ORM\ManyToOne(inversedBy: 'wishes')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['getWishes'])]
     private ?User $user = null;
 
     /**
      * @var Collection<int, Comment>
      */
-    #[ORM\OneToMany(targetEntity: Comment::class, mappedBy: 'wish', orphanRemoval: true)]
+    #[ORM\OneToMany(mappedBy: 'wish', targetEntity: Comment::class)]
+    #[Groups(['getWishes'])]
     private Collection $comments;
 
     public function getId(): ?int

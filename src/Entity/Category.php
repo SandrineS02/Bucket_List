@@ -8,6 +8,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[UniqueEntity('name')]
 #[ORM\Entity(repositoryClass: CatagoryRepository::class)]
@@ -21,6 +22,7 @@ class Category
     #[Assert\NotBlank]
     #[Assert\Length(max: 50)]
     #[ORM\Column(length: 50)]
+    #[Groups(['getWishes'])]
     private ?string $name = null;
 
     /**

@@ -6,6 +6,7 @@ use App\Repository\CommentRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: CommentRepository::class)]
 class Comment
@@ -17,6 +18,7 @@ class Comment
 
     #[ORM\ManyToOne(inversedBy: 'comments')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['getWishes'])]
     private ?User $user = null;
 
     #[ORM\ManyToOne(inversedBy: 'comments')]
@@ -25,14 +27,17 @@ class Comment
 
     #[ORM\Column(type: Types::TEXT)]
     #[Assert\NotBlank]
+    #[Groups(['getWishes'])]
     private ?string $content = null;
 
     #[ORM\Column(type: Types::SMALLINT)]
     #[Assert\NotBlank]
     #[Assert\Assert\Range(min: 1, max: 5)]
+    #[Groups(['getWishes'])]
     private ?int $score = null;
 
     #[ORM\Column]
+    #[Groups(['getWishes'])]
     private ?\DateTimeImmutable $dateCreated = null;
 
     #[ORM\Column(nullable: true)]

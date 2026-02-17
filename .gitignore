@@ -14,3 +14,7 @@
 ###< phpunit/phpunit ###
 ### ignore les reglages phpstorm
 /.idea/
+
+###> lexik/jwt-authentication-bundle ###
+/config/jwt/*.pem
+###< lexik/jwt-authentication-bundle ###

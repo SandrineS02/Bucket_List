@@ -1,0 +1,12 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <h2>Ooooops ! Quelque chose s’est cassé !</h2>
+    <p>
+        <a href="{{ path('main_home') }}" title="Retourner sur la page d'accueil">
+            Cliquez ici pour retourner sur la page d'accueil
+        </a>
+    </p>
+{% endblock %}
+
+{% block title %}Errooooor ! | {{ parent() }}{% endblock %}

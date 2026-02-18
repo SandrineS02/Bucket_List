@@ -19,19 +19,19 @@
             <p class="card-text">{{ wish.description|nl2br }}</p>
         </div>
         <div class="text-center">
-            {% if app.user == wish.user or is_granted('ROLE_ADMIN') %}
-            <a href="{{ path('wish_delete', {'id': wish.id, 'token': csrf_token('delete'~wish.id)}) }}"
-               class="btn btn-danger mt-2"
-               title="Supprimer le souhait">
-                Supprimer
-            </a>
+            {% if is_granted('WISH_DELETE', wish) %}
+                <a href="{{ path('wish_delete', {'id': wish.id, 'token': csrf_token('delete'~wish.id)}) }}"
+                   class="btn btn-danger mt-2"
+                   title="Delete the wish">
+                    Delete
+                </a>
             {% endif %}
-            {% if app.user == wish.user %}
-            <a href="{{ path('wish_update', {'id': wish.id}) }}"
-               class="btn btn-secondary mt-2"
-               title="Modifier le souhait">
-                Modifier
-            </a>
+            {% if is_granted('WISH_EDIT', wish) %}
+                <a href="{{ path('wish_update', {'id': wish.id }) }}"
+                   class="btn btn-secondary mt-2"
+                   title="Modify the wish">
+                    Modify
+                </a>
             {% endif %}
         </div>
     </div>
@@ -52,14 +52,14 @@
             <div class="border border-1 rounded p-2 mt-2">
                 <p class="wish-credit">
                     Ecrit par {{ comment.user.username }} le {{ comment.dateCreated | date('d-m-Y H:i:s') }}
-                    {% if app.user and (app.user == comment.user) %}
+                    {% if is_granted('COMMENT_EDIT', comment) %}
                         <a href="{{ path('comment_update', {'id': comment.id }) }}"
                            class="btn btn-secondary btn-sm"
                            title="Modifier votre commentaire">
-                            Modifier
+                            Modify
                         </a>
                     {% endif %}
-                    {% if app.user and (app.user == comment.user or is_granted('ROLE_ADMIN')) %}
+                    {% if is_granted('COMMENT_DELETE', comment)  %}
                         <a href="{{ path('comment_delete', {'id': comment.id, 'token': csrf_token('delete'~comment.id) }) }}"
                            class="btn btn-danger btn-sm"
                            title="Supprimer votre commentaire">

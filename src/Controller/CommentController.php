@@ -16,17 +16,21 @@ class CommentController extends AbstractController
 {
     #[Route('/{id}', name: 'comment_update', methods: ['GET','POST'])]
     #[IsGranted("ROLE_USER")]
+    #[IsGranted('COMMENT_EDIT', 'comment')]
     public function update(?Comment $comment, Request $request, EntityManagerInterface $manager): Response
     {
         if (!$comment){
-            throw $this->createNotFoundException('This comment do not exists! Sorry!');
+            throw $this->createNotFoundException("Ce commentaire n'existe pas ! Désolé !");
         }
         $commentForm = $this->createForm(CommentType::class, $comment);
         $commentForm->handleRequest($request);
+        // if (!($comment->getUser() === $this->getUser() || $this->isGranted('ROLE_ADMIN')) ) {
+        //    throw $this->createAccessDeniedException('Vous n\'avez pas le droit de supprimer ce commentaire !');
+        // }
         if ($commentForm->isSubmitted() && $commentForm->isValid()){
             $comment->setDateUpdated(new \DateTimeImmutable());
             $manager->flush();
-            $this->addFlash('success', 'Comment successfully updated!');
+            $this->addFlash('success', 'Commentaire modifié !');
             return $this->redirectToRoute('wish_detail', [
                 'id' => $comment->getWish()->getId()
             ]);
@@ -39,21 +43,22 @@ class CommentController extends AbstractController
 
     #[Route('/{id}/delete', name: 'comment_delete', requirements: ['id'=>'\d+'], methods: ['GET'])]
     #[IsGranted("ROLE_USER")]
+    #[IsGranted('COMMENT_DELETE', 'comment')]
     public function delete(?Comment $comment, EntityManagerInterface $em, Request $request): Response
     {
         if (!$comment){
-            throw $this->createNotFoundException('This comment does not exists!');
+            throw $this->createNotFoundException("Ce commentaire n'existe pas ! Désolé !");
         }
-        if (!($comment->getUser() === $this->getUser() || $this->isGranted('ROLE_ADMIN')) ) {
-            throw $this->createAccessDeniedException('You don\'t have authorization to delete this comment!');
-        }
+        /*if (!($comment->getUser() === $this->getUser() || $this->isGranted('ROLE_ADMIN')) ) {
+            throw $this->createAccessDeniedException('Vous n\'avez pas le droit de supprimer ce commentaire !');
+        }*/
         if ($this->isCsrfTokenValid('delete'.$comment->getId(), $request->query->get('token'),)) {
             $em->remove($comment);
             $em->flush();
-            $this->addFlash('success', 'The comment has been deleted');
+            $this->addFlash('success', 'Commentaire supprimé !');
         }
         else {
-            $this->addFlash('danger', 'This comment cannot be deleted');
+            $this->addFlash('danger', 'Ce commentaire ne peux pas être supprimé');
         }
         return $this->redirectToRoute('wish_detail', [
             'id' => $comment->getWish()->getId()

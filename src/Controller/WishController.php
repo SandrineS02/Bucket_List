@@ -130,9 +130,10 @@ final class WishController extends AbstractController
             throw $this->createNotFoundException("Ce souhait n'existe pas");
         }
 
-        if ($wish->getUser() !== $this->getUser()) {
+        /*if ($wish->getUser() !== $this->getUser()) {
             throw $this->createAccessDeniedException();
-        }
+        }*/
+        $this->denyAccessUnlessGranted('WISH_EDIT', $wish);
 
         $wishForm = $this->createForm(WishFormType::class, $wish);
         $wishForm->handleRequest($request);
@@ -196,10 +197,10 @@ final class WishController extends AbstractController
             throw $this->createNotFoundException("Ce souhait n'existe pas");
         }
 
-        if (!($wish->getUser() === $this->getUser() || $this->isGranted('ROLE_ADMIN'))) {
+       /* if (!($wish->getUser() === $this->getUser() || $this->isGranted('ROLE_ADMIN'))) {
             throw $this->createAccessDeniedException();
-        }
-
+        }*/
+        $this->denyAccessUnlessGranted('WISH_DELETE', $wish);
         // Vérifie le token CSRF
         if ($this->isCsrfTokenValid('delete' . $id, $request->query->get('token'))) {
 

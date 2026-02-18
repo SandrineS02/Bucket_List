@@ -30,6 +30,16 @@ class WishRepository extends ServiceEntityRepository
         $query = $queryBuilder->getQuery();
         return $query->getResult();
     }
+
+    public function purge(int $nbMonths = 6): void
+    {
+        $this->createQueryBuilder('w')
+            ->delete()
+            ->where('w.published = 0 AND DATE_ADD(w.dateCreated, :nbMonths, \'MONTH\') <= CURRENT_TIMESTAMP()')
+            ->setParameter('nbMonths', $nbMonths)
+            ->getQuery()
+            ->execute();
+    }
     //    /**
     //     * @return Wish[] Returns an array of Wish objects
     //     */

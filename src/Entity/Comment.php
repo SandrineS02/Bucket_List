@@ -32,7 +32,7 @@ class Comment
 
     #[ORM\Column(type: Types::SMALLINT)]
     #[Assert\NotBlank]
-    #[Assert\Assert\Range(min: 1, max: 5)]
+    #[Assert\Range(min: 1, max: 5)]
     #[Groups(['getWishes'])]
     private ?int $score = null;
 
@@ -41,7 +41,7 @@ class Comment
     private ?\DateTimeImmutable $dateCreated = null;
 
     #[ORM\Column(nullable: true)]
-    private ?\DateTimeImmutable $DateUpdated = null;
+    private ?\DateTimeImmutable $dateUpdated = null;
 
     public function __construct()
     {
@@ -115,12 +115,12 @@ class Comment
 
     public function getDateUpdated(): ?\DateTimeImmutable
     {
-        return $this->DateUpdated;
+        return $this->dateUpdated;
     }
 
-    public function setDateUpdated(?\DateTimeImmutable $DateUpdated): static
+    public function setDateUpdated(?\DateTimeImmutable $dateUpdated): static
     {
-        $this->DateUpdated = $DateUpdated;
+        $this->dateUpdated = $dateUpdated;
 
         return $this;
     }
